@@ -1,13 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>AP Psychology Review Game</title>
-    <link rel="stylesheet" href="./style.css">
-  </head>
-  <body>
-    <main>
-        <h1>Welcome to My Website</h1>  
-    </main>
-	<script src="index.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sentence Scramble Game</h1>
+  <div id="canvas-container">
+    <script>
+      let words;
+      let shuffledWords;
+      let sentence;
+      let currentIndex = 0;
+      let isDragging = false;
+      let draggedWordIndex = -1;
+      let canvasWidth = 800;
+      let canvasHeight = 700; // Increased canvas height
+      let fontSize = 32; // Adjust the font size
+      let headerText = "Rearrange the sentence below:"; // Header text
+      let password = "secret"; // Password to access the next page
+      let formCreated = false; // Track if the form has been created
+
+      function setup() {
+        createCanvas(canvasWidth, canvasHeight);
+        textAlign(CENTER, CENTER);
+
+        // Initialize the words and sentence
+        words = ["This", "is", "a", "sentence", "scramble", "game"];
+        shuffledWords = shuffle(words.slice()); // Create a shuffled copy
+        sentence = words.join(" ");
+      }
+
+      function draw() {
+        background(220);
+
+        // Display the header text at the top
+        fill(0);
+        textSize(24);
+        text(headerText, canvasWidth / 2, 30);
+
+        // Display the shuffled words
+        for (let i = 0; i < shuffledWords.length; i++) {
+          let x = canvasWidth / 2;
+          let y = 80 + i * 50; // Adjust the vertical spacing below the header
+
+          if (i === draggedWordIndex && isDragging) {
+            // Display the word that's being dragged at the mouse position
+            x = mouseX;
+            y = mouseY;
+          }
+
+          fill(0);
+          textSize(fontSize); // Set the font size
+          text(shuffledWords[i], x, y);
+        }
+
+        // Check if the sentence is correctly ordered
+        if (currentIndex === words.length) {
+          fill(0, 200, 0);
+          textSize(24);
+          text("Sentence Correct!", canvasWidth / 2, canvasHeight - 50);
+
+          // Display the password input form
+          if (!formCreated) {
+            createPasswordForm();
+            formCreated = true; // Set the flag to true
+          }
+        }
+      }
+
+      function mousePressed() {
+        for (let i = 0; i < shuffledWords.length; i++) {
+          let x = canvasWidth / 2;
+          let y = 80 + i * 50; // Adjust the vertical spacing below the header
+          let wordWidth = textWidth(shuffledWords[i]);
+
+          if (mouseX > x - wordWidth / 2 && mouseX < x + wordWidth / 2 && mouseY > y - fontSize / 2 && mouseY < y + fontSize / 2) {
+            isDragging = true;
+            draggedWordIndex = i;
+            break;
+          }
+        }
+      }
+
+      function mouseReleased() {
+        if (isDragging) {
+          isDragging = false;
+
+          for (let i = 0; i < shuffledWords.length; i++) {
+            let x = canvasWidth / 2;
+            let y = 80 + i * 50; // Adjust the vertical spacing below the header
+            let wordWidth = textWidth(shuffledWords[i]);
+
+            if (mouseX > x - wordWidth / 2 && mouseX < x + wordWidth / 2 && mouseY > y - fontSize / 2 && mouseY < y + fontSize / 2) {
+              // Swap the dragged word with the word it was dropped onto
+              const temp = shuffledWords[i];
+              shuffledWords[i] = shuffledWords[draggedWordIndex];
+              shuffledWords[draggedWordIndex] = temp;
+
+              // Check if the sentence is correctly ordered
+              currentIndex = 0;
+              for (let j = 0; j < words.length; j++) {
+                if (shuffledWords[j] === words[currentIndex]) {
+                  currentIndex++;
+                } else {
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      function createPasswordForm() {
+        const passwordForm = `
+          <form id="password-form" action="nextpage.html" method="post">
+            <label for="password">Enter the password:</label>
+            <input type="password" id="password" name="password">
+            <button type="submit">Submit</button>
+          </form>
+        `;
+        document.getElementById('canvas-container').innerHTML += passwordForm;
+      }
+    </script>
+  </div>
+</body>
 </html>
